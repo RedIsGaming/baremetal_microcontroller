@@ -1,0 +1,15 @@
+[workspace]
+members = ["microcontroller"]
+resolver = "2"
+
+[profile.dev]
+panic = "abort"
+opt-level = 1
+lto = false
+debug = true
+
+[profile.release]
+panic = "abort"
+opt-level = "z"
+lto = true
+debug = true
