@@ -1,48 +1,36 @@
 #![no_std]
 #![no_main]
-#![allow(unused)]
+#![allow(clippy::empty_loop)]
 
 use cortex_m_rt::entry;
-use stm32f4::stm32f411::Peripherals;
-use panic_semihosting as _;
-
-fn set_led(peripheral: &Peripherals) {
-    peripheral.GPIOD.odr.modify(|_, w| w
-        .odr12().set_bit()
-        .odr13().set_bit()
-        .odr14().set_bit()
-        .odr15().set_bit())
-}
-
-fn delay() {
-    for _ in 0..1000000 { }
-}
-
-fn clear_led(peripheral: &Peripherals) {
-    peripheral.GPIOD.odr.modify(|_, w| w
-        .odr12().clear_bit()
-        .odr13().clear_bit()
-        .odr14().clear_bit()
-        .odr15().clear_bit())
-}
+// Halt on panic
+use panic_semihosting as _; // panic handler
+use stm32f4xx_hal::{pac, prelude::*};
 
 #[entry]
 unsafe fn main() -> ! {
-    //let peripheral = Peripherals::take().unwrap();
-    
-    //peripheral.RCC.ahb1enr.modify(|_, w| w.gpioaen().set_bit());
-    // peripheral.GPIOA.moder.modify(|_, w| w
-    //     .moder12().output()
-    //     .moder13().output()
-    //     .moder14().output()
-    //     .moder15().output());
+    if let (Some(dp), Some(cp)) = (
+        pac::Peripherals::take(),
+        cortex_m::peripheral::Peripherals::take(),
+    ) {       
+        //GPIOD ophalen
+        let gpiod = dp.GPIOD.split();
+        //pd12 is pin type
+        let mut led = gpiod.pd12.into_push_pull_output();
 
-    //set_led(&peripheral);
-    
-    loop {
-        delay();
-        //clear_led(&peripheral);
-        delay();
-        //set_led(&peripheral);
+        //Klok instellen
+        let rcc = dp.RCC.constrain();
+        let clocks = rcc.cfgr.sysclk(48.MHz()).freeze();
+
+        // Create a delay abstraction based on SysTick
+        let mut delay = cp.SYST.delay(&clocks);
+
+        loop {
+            // On for 1s, off for 1s.
+            led.toggle();
+            delay.delay_ms(1000_u32);
+        }
     }
+
+    loop {}
 }

@@ -1,7 +1,9 @@
 [package]
-name = "microcontroller"
+name = "baremetal_microcontroller"
 version = "0.1.0"
 edition = "2021"
+readme = "README.md"
+authors = ["RedIsGaming <>, Dwarffish <>"]
 
 [dependencies]
 cortex-m-rt = { version = "0.7.3", features = ["device"] }
@@ -9,6 +11,8 @@ cortex-m = "0.7.7"
 panic-semihosting = "0.6.0"
 stm32f4 = { version = "0.15.1", features = ["stm32f411", "rt"] }
 cortex-m-semihosting = "0.5.0"
+stm32f4xx-hal = { version = "0.22.0", features = ["stm32f411"] }
+alloc-cortex-m = "0.4.3"
 
 [package.metadata.cortex-m-rt]
 memory.x = true
