@@ -14,13 +14,8 @@ fn gpiod_register(stm32_peripherals: &Stm32Peripherals) {
     //GPIOD ophalen
     stm32_peripherals.RCC.ahb1enr.modify(|_, w| w.gpioden().set_bit());
 
-    //pd12, 13, 14 en 15 is pin type
-    stm32_peripherals.GPIOD.moder.modify(|_, w| w
-        .moder12().output()
-        .moder13().output()
-        .moder14().output()
-        .moder15().output()
-    )
+    //pd12 (, 13, 14 en 15) is pin type
+    stm32_peripherals.GPIOD.moder.modify(|_, w| w.moder12().output())
 }
 
 fn enable_led(stm32_peripherals: &Stm32Peripherals) {
@@ -44,6 +39,14 @@ fn clock_register(stm32_peripherals: &Stm32Peripherals) {
     stm32_peripherals.RCC.cr.modify(|_, w| w.hsion().off());
 }
 
+fn delay_status(delay: &mut Delay, mut status: bool) {
+    delay.delay_ms(1000_u32);
+    status ^= true;
+
+    //dit verschijnt in een van de open terminals in vscode
+    hprintln!("Led {:?}", if status { "uit!" } else { "aan!" });
+}
+
 #[entry]
 unsafe fn main() -> ! {
     if let Some(stm32_peripherals) = Stm32Peripherals::take() {
@@ -51,7 +54,7 @@ unsafe fn main() -> ! {
 
         // Create a delay abstraction based on SysTick
         let mut delay = Delay::new(cortex_peripherals.SYST, 0x7A1200_u32.mul(2).sub(1));
-        let mut status = false;
+        let status = false;
 
         clock_register(&stm32_peripherals);
         gpiod_register(&stm32_peripherals);
@@ -59,18 +62,9 @@ unsafe fn main() -> ! {
         loop {
             // On for 1s, off for 1s.
             enable_led(&stm32_peripherals);
-            delay.delay_ms(1000_u32);
-            status ^= true;
-
-            //dit verschijnt in een van de open terminals in vscode
-            hprintln!("Led {:?}", if status { "uit!" } else { "aan!" });
-
+            delay_status(&mut delay, status);
             disable_led(&stm32_peripherals);
-            delay.delay_ms(1000_u32);
-            status ^= true;
-
-            //dit verschijnt in een van de open terminals in vscode
-            hprintln!("Led {:?}", if status { "uit!" } else { "aan!" });
+            delay_status(&mut delay, !status);
         }
     }
 
