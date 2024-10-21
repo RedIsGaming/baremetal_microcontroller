@@ -5,7 +5,7 @@
 extern crate alloc;
 
 use crate::alloc::boxed::Box;
-use baremetal_microcontroller::{LedState, color_led::*};
+use baremetal_microcontroller::{color_led::*, LedState};
 use core::ops::{Mul, Sub};
 
 use cortex_m_rt::entry;
@@ -15,8 +15,11 @@ use stm32f4::stm32f411::Peripherals as Stm32Peripherals;
 use cortex_m::{delay::Delay, Peripherals as CortexPeripherals};
 
 fn gpiod_register(stm32_peripherals: &Stm32Peripherals) {
-    //GPIOD ophalen
-    stm32_peripherals.RCC.ahb1enr.modify(|_, w| w.gpioden().set_bit());
+    //GPIOD ophalen en GPIOA aanzetten
+    stm32_peripherals.RCC.ahb1enr.modify(|_, w| w
+        .gpioden().set_bit()
+        .gpioaen().set_bit()
+    );
 
     //pd12, 13, 14 en 15 is pin type
     stm32_peripherals.GPIOD.moder.modify(|_, w| w
@@ -25,6 +28,8 @@ fn gpiod_register(stm32_peripherals: &Stm32Peripherals) {
         .moder14().output()
         .moder15().output()
     );
+
+    stm32_peripherals.GPIOA.moder.modify(|_, w| w.moder0().input());
 }
 
 fn clock_register(stm32_peripherals: &Stm32Peripherals) {
@@ -51,12 +56,12 @@ unsafe fn main() -> ! {
         clock_register(&stm32_peripherals);
         gpiod_register(&stm32_peripherals);
 
-        let mut led_state: Option<Box<dyn LedState>> = Some(Box::new(GreenLed));
+        let mut led_state: Option<Box<dyn LedState>> = Some(Box::new(RedLed));
         
         loop {
             if let Some(led) = led_state.take() {
                 led.delay_status(&mut delay);
-                led_state = Some(led.next(&stm32_peripherals).unwrap());
+                led_state = Some(led.next(&stm32_peripherals, &mut delay).unwrap());
             }
         }
     }
