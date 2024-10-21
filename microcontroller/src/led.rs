@@ -1,3 +1,6 @@
+use cortex_m::delay::Delay;
+use cortex_m_semihosting::hprintln;
+
 #[derive(Debug, Default)]
 pub struct Leds {
     pub status: bool,
@@ -10,5 +13,13 @@ impl Leds {
             status,
             delay_time,
         }
+    }
+
+    pub fn delay(mut self, delay: &mut Delay) -> Self {
+        delay.delay_ms(self.delay_time);
+        self.status ^= true;
+        hprintln!("The led is now triggered.");
+        
+        self
     }
 }

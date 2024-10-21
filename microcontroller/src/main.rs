@@ -18,7 +18,7 @@ fn gpiod_register(stm32_peripherals: &Stm32Peripherals) {
     //GPIOD ophalen
     stm32_peripherals.RCC.ahb1enr.modify(|_, w| w.gpioden().set_bit());
 
-    //pd12 (, 13, 14 en 15) is pin type
+    //pd12, 13, 14 en 15 is pin type
     stm32_peripherals.GPIOD.moder.modify(|_, w| w
         .moder12().output()
         .moder13().output()
@@ -31,10 +31,7 @@ fn clock_register(stm32_peripherals: &Stm32Peripherals) {
     //Klok instellen
     stm32_peripherals.RCC.pllcfgr.modify(|_, w| 
         unsafe {
-            w.pllsrc().hse()
-                .pllp().bits(0x2)
-                .plln().bits(0x30)
-                .pllm().bits(0x4)
+            w.pllsrc().hse().pllp().bits(0x2).plln().bits(0x30).pllm().bits(0x4)
         }
     );
 
@@ -54,12 +51,13 @@ unsafe fn main() -> ! {
         clock_register(&stm32_peripherals);
         gpiod_register(&stm32_peripherals);
 
-        let mut led_state: Box<dyn LedState> = Box::new(GreenLed);
-        let delay_time = Some(Box::new(GreenLed));
-
+        let mut led_state: Option<Box<dyn LedState>> = Some(Box::new(GreenLed));
+        
         loop {
-            delay_time.as_ref().unwrap().delay_status(&mut delay);
-            led_state = led_state.next(&stm32_peripherals).unwrap();
+            if let Some(led) = led_state.take() {
+                led.delay_status(&mut delay);
+                led_state = Some(led.next(&stm32_peripherals).unwrap());
+            }
         }
     }
 
