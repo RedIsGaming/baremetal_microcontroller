@@ -1,29 +1,22 @@
 use cortex_m_semihosting::hprintln;
 
 #[derive(Debug, Default, PartialEq, Eq)]
-pub enum UserButton {
+pub enum BridgeState {
     Open,
     #[default] Closed,
 }
 
+#[derive(Debug, Default, PartialEq, Eq)]
+pub struct UserButton;
+
 impl UserButton {
-    pub fn bridge_state(&self) -> &Self {
-        match *self {
-            UserButton::Open => {
-                UserButton::open_bridge(&UserButton::Open)
+    pub fn bridge_state(state: BridgeState) -> BridgeState {
+        match state {
+            BridgeState::Open => {
+                hprintln!("The bridge is now open.");
+                BridgeState::Open
             },
-            UserButton::Closed => {
-                UserButton::close_bridge(&UserButton::Closed)
-            }
+            BridgeState::Closed => BridgeState::Closed
         }
-    }
-
-    fn open_bridge(&self) -> &Self {
-        hprintln!("The bridge is now open.");
-        self
-    }
-
-    fn close_bridge(&self) -> &Self {
-        self
     }
 }
