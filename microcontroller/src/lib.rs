@@ -1,14 +1,15 @@
 #![no_std]
 
-pub mod led;
+pub mod colors;
 mod user_button;
 mod state;
 pub mod registers;
+mod errors;
 
 extern crate alloc;
 
-use crate::{alloc::boxed::Box, led::RedLed};
-use core::{convert::Infallible, fmt};
+use crate::{alloc::boxed::Box, colors::led::RedLed, errors::pin::PinError};
+use core::fmt;
 
 use stm32f4::stm32f411::Peripherals as Stm32Peripherals;
 use alloc_cortex_m::CortexMHeap;
@@ -18,7 +19,7 @@ use cortex_m::delay::Delay;
 static GLOBAL_ALLOCATOR: CortexMHeap = CortexMHeap::empty();
 
 pub trait LedState: fmt::Debug {
-    fn next(self: Box<Self>, color: &Stm32Peripherals) -> Result<Box<dyn LedState>, Infallible>;
+    fn next(self: Box<Self>, color: &Stm32Peripherals) -> Result<Box<dyn LedState>, PinError>;
     fn delay_status(&self, delay: &mut Delay);
 }
 

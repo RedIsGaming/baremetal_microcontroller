@@ -5,7 +5,8 @@
 extern crate alloc;
 
 use crate::alloc::boxed::Box;
-use baremetal_microcontroller::{led::*, LedState, registers::{clock, gpiod}};
+use baremetal_microcontroller::{colors::led::*, registers::{clock, gpiod}, LedState};
+use cortex_m_semihosting::hprintln;
 use core::ops::{Mul, Sub};
 
 use cortex_m_rt::entry;
@@ -30,7 +31,16 @@ unsafe fn main() -> ! {
         loop {
             if let Some(led) = led_state.take() {
                 led.delay_status(&mut delay);
-                led_state = Some(led.next(&stm32_peripherals).unwrap());
+                //led_state = Some(led.next(&stm32_peripherals).unwrap());
+
+                match led.next(&stm32_peripherals) {
+                    Ok(led_color) => led_state = Some(led_color),
+                    Err(err) => {
+                        hprintln!("Bridge is dead");
+                        let _ = Box::new(BlueLed);
+                        continue;
+                    }
+                }
             }
         }
     }
