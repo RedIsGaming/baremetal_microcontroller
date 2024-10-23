@@ -23,7 +23,7 @@ impl LedState for OrangeLed {
 
         if color.GPIOA.idr.read().idr0().bit_is_set() {
             //return Ok(Box::new(UserButton));
-            return Err(PinError::BridgeSensorError("The bridge sensor is broken!"))?;
+            return Err(PinError::from("The bridge sensor is broken!"))?;
         }
 
         Ok(Box::new(RedLed))

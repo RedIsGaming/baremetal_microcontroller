@@ -7,21 +7,21 @@ pub enum PinError {
 }
 
 impl From<convert::Infallible> for PinError {
-    fn from(error: convert::Infallible) -> Self {
-        PinError::GPIOLedError(error)
+    fn from(value: convert::Infallible) -> Self {
+        PinError::GPIOLedError(value)
     }
 }
 
 impl From<&'static str> for PinError {
-    fn from(error: &'static str) -> Self {
-        PinError::BridgeSensorError(error)
+    fn from(value: &'static str) -> Self {
+        PinError::BridgeSensorError(value)
     }
 }
 
 impl fmt::Display for PinError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match *self {
-            PinError::GPIOLedError(infallible) => write!(f, "{}", infallible),
+            PinError::GPIOLedError(err) => write!(f, "{}", err),
             PinError::BridgeSensorError(err) => write!(f, "{}", err),
         }
     }
