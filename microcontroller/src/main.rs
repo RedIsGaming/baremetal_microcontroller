@@ -31,7 +31,6 @@ unsafe fn main() -> ! {
         loop {
             if let Some(led) = led_state.take() {
                 led.delay_status(&mut delay);
-                //led_state = Some(led.next(&stm32_peripherals).unwrap());
 
                 match led.next(&stm32_peripherals, &mut delay) {
                     Ok(led_color) => led_state = Some(led_color),
