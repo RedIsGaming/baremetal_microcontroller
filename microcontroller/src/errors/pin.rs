@@ -1,26 +1,9 @@
-use crate::LedState;
-use core::{convert, error, fmt};
-use alloc::boxed::Box;
-
-#[derive(Debug)]
-pub struct Pin {
-    pub source: &'static str,
-    pub state: Box<dyn LedState>
-}
-
-impl Pin {
-    pub fn new(source: &'static str, state: Box<dyn LedState>) -> Pin {
-        Pin { 
-            source, 
-            state,
-        }
-    }
-}
+use core::{convert, fmt};
 
 #[derive(Debug)]
 pub enum PinError {
     GPIOLedError(convert::Infallible),
-    BridgeSensorError(Pin),
+    BridgeSensorError(&'static str),
 }
 
 impl From<convert::Infallible> for PinError {
@@ -29,20 +12,17 @@ impl From<convert::Infallible> for PinError {
     }
 }
 
-impl From<Pin> for PinError {
-    fn from(error: Pin) -> Self {
+impl From<&'static str> for PinError {
+    fn from(error: &'static str) -> Self {
         PinError::BridgeSensorError(error)
     }
 }
 
-impl fmt::Display for Pin {
+impl fmt::Display for PinError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "An unexpected error has occurred!")
-    }
-}
-
-impl error::Error for Pin {
-    fn source(&self) -> Option<&(dyn error::Error + 'static)> {
-        Some(self)
+        match *self {
+            PinError::GPIOLedError(infallible) => write!(f, "{}", infallible),
+            PinError::BridgeSensorError(err) => write!(f, "{}", err),
+        }
     }
 }

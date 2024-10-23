@@ -19,7 +19,7 @@ use cortex_m::delay::Delay;
 static GLOBAL_ALLOCATOR: CortexMHeap = CortexMHeap::empty();
 
 pub trait LedState: fmt::Debug {
-    fn next(self: Box<Self>, color: &Stm32Peripherals) -> Result<Box<dyn LedState>, PinError>;
+    fn next(self: Box<Self>, color: &Stm32Peripherals, delay: &mut Delay) -> Result<Box<dyn LedState>, PinError>;
     fn delay_status(&self, delay: &mut Delay);
 }
 

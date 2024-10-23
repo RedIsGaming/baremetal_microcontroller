@@ -33,12 +33,11 @@ unsafe fn main() -> ! {
                 led.delay_status(&mut delay);
                 //led_state = Some(led.next(&stm32_peripherals).unwrap());
 
-                match led.next(&stm32_peripherals) {
+                match led.next(&stm32_peripherals, &mut delay) {
                     Ok(led_color) => led_state = Some(led_color),
                     Err(err) => {
-                        hprintln!("Bridge is dead");
-                        let _ = Box::new(BlueLed);
-                        continue;
+                        hprintln!("An unexpected problem has occurred: {}", err);
+                        led_state = Some(Box::new(BlueLed))
                     }
                 }
             }
